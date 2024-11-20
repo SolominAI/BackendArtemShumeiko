@@ -30,7 +30,7 @@ def get_hotel(
         hotels_.append(hotel)
     return hotels_
 
-
+# Задание №1 Put and Patch
 @app.post('/hotels')
 def create_hotel(
    title: str = Body(embed=True)
