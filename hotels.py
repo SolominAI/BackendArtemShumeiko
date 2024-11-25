@@ -1,5 +1,7 @@
-from fastapi import Query, Body, APIRouter
-from pydantic import BaseModel
+from fastapi import Query, APIRouter
+
+from schemas.hotels import Hotel, HotelPATCH
+
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
 
@@ -7,11 +9,6 @@ hotels = [
     {'id': 1, 'title': 'Sochi', 'name': 'sochi'},
     {'id': 2, 'title': 'Dubai', 'name': 'dubai'},
 ]
-
-
-class Hotel(BaseModel):
-    title: str
-    name: str
 
 
 @router.get('')
@@ -53,21 +50,20 @@ def update_hotel(id: int, hotel_data: Hotel):
 @router.patch("/{hotel_id}",
               summary='Частичное обновление данных об отеле',
               description='<h1>Метод для обновления name и title</h1>')
-def update_hotel_fields(
-        id: int = Query(description='ID отеля'),
-        title: str | None = Body(default=None, embed=True, description='Название отеля'),
-        name: str | None = Body(default=None, embed=True, description='Альтернативное название отеля'),
-):
-    hotels_ = get_hotel()
-    for hotel in hotels_:
-        if hotel['id'] == id:
-            update_fields = []
-            if title:
-                hotel['title'] = title
+def update_hotel_fields(hotel_id: int, hotel_data: HotelPATCH,):
+    global hotels
+    update_fields = []
+
+    for hotel in hotels:
+        if hotel['id'] == hotel_id:
+            if hotel_data.title:
+                hotel['title'] = hotel_data.title
                 update_fields.append('title')
-            if name:
-                hotel['name'] = name
+
+            if hotel_data.name:
+                hotel['name'] = hotel_data.name
                 update_fields.append('name')
+
             return {'status': 'OK', 'update_fields': update_fields} if update_fields else {'status': 'no changes made'}
 
     return {'status': 'hotel not found'}
