@@ -6,36 +6,51 @@ from schemas.hotels import Hotel, HotelPATCH
 router = APIRouter(prefix='/hotels', tags=['Отели'])
 
 hotels = [
-    {'id': 1, 'title': 'Sochi', 'name': 'sochi'},
-    {'id': 2, 'title': 'Dubai', 'name': 'dubai'},
+    {'id': 1, 'title': 'Сочи', 'name': 'sochi'},
+    {'id': 2, 'title': 'Дубай', 'name': 'dubai'},
+    {'id': 3, 'title': 'Москва', 'name': 'moscow'},
+    {'id': 4, 'title': 'Казань', 'name': 'kazan'},
+    {'id': 5, 'title': 'Санкт-Петербург', 'name': 'spb'},
+    {'id': 6, 'title': 'Владивосток', 'name': 'vld'},
+    {'id': 7, 'title': 'Петропавловск', 'name': 'chatka'},
 ]
 
 
 @router.get('')
 def get_hotel(
-        id: int | None = Query(None, description='ID отеля'),
+        hotel_id: int | None = Query(None, description='ID отеля'),
         title: str | None = Query(None, description='Название отеля'),
+        page: int = Query(1, description='Номер стр.'),
+        per_page: int = Query(3, description='Кол-во отелей на стр.'),
 ):
     hotels_ = []
     for hotel in hotels:
-        if id and hotel['id'] != id:
+        if hotel_id and hotel['id'] != id:
             continue
         if title and hotel['title'] != title:
             continue
         hotels_.append(hotel)
-    return hotels_
+
+    start = (page-1) * per_page
+    end = start + per_page
+
+    return hotels_[start:end]
 
 
 @router.post('')
 def create_hotel(hotel_data: Hotel = Body(openapi_examples={
-    '1':{'summary': "Владивосток", 'value': {
-        'title': 'Отель Меридиан',
-        'name': 'meridian'
-         }},
-    '2':{'summary': "Дубай", 'value': {
-         'title': 'Отель Дубай у фонтана',
-         'name': 'dubai_fountain'
-         }}})):
+    '1': {'summary': "Владивосток",
+          'value': {
+            'title': 'Отель Меридиан',
+            'name': 'meridian'
+            }
+          },
+    '2': {'summary': "Дубай",
+          'value': {
+            'title': 'Отель Дубай у фонтана',
+            'name': 'dubai_fountain'
+            }
+          }})):
 
     global hotels
     hotels.append({
@@ -47,9 +62,9 @@ def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 
 
 @router.put("/{hotel_id}")
-def update_hotel(id: int, hotel_data: Hotel):
+def update_hotel(hotel_id: int, hotel_data: Hotel):
     for hotel in hotels:
-        if hotel['id'] == id:
+        if hotel['id'] == hotel_id:
             hotel['title'] = hotel_data.title
             hotel['name'] = hotel_data.name
             return {'status': 'OK'}
